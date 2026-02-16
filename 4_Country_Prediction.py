@@ -1,33 +1,18 @@
-import streamlit as st
-import pickle
-import numpy as np
-
-st.title("Country Prediction")
-
 @st.cache_resource
-def load_models():
-    return pickle.load(open("country_models.pkl", "rb"))
+def train_models():
+    import pandas as pd
+    from sklearn.linear_model import LinearRegression
 
-models = load_models()
+    df = pd.read_csv("data/data.csv")
+    models = {}
+    X = df[["Year"]]
 
-# Select Country
-country = st.selectbox(
-    "Select Country",
-    list(models.keys())
-)
+    for country in df.columns[1:]:
+        y = df[country]
+        model = LinearRegression()
+        model.fit(X, y)
+        models[country] = model
 
-# Input Year
-year = st.number_input(
-    "Enter Year for Prediction",
-    min_value=1990,
-    max_value=2050,
-    step=1
-)
+    return models
 
-# Prediction
-if st.button("Predict"):
-    model = models[country]
-    prediction = model.predict(np.array([[year]]))
-
-    st.success(f"Predicted {country} Value in {year}: {prediction[0]:.2f}")
-
+models = train_models()
